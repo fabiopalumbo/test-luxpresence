@@ -5,6 +5,7 @@
 <summary>Ephemeral Prompt:</summary>
 <details>
 
+```
 Your team is responsible for delivering ephemeral environments to the other engineering teams. These environments should be created when a developer submits a pull request on GitHub. They should also mirror staging and production which runs microservices on Kubernetes and uses PostgreSQL as the primary database. You are free to pull in any other tool you see the need for — e.g., CI/CD, logging, and etc.
 Whiteboard a system that addresses the following requirements:
 
@@ -19,6 +20,7 @@ Please walk us through your solution, including any relevant Kubernetes resource
 Feel free to use any whiteboard tool to save your work for the interview. Here is one we recommend: https://excalidraw.com/
  
 Please let me know if you have any questions!
+```
 
 </details>
 
