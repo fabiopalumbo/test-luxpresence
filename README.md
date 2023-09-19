@@ -67,13 +67,13 @@ Usually a ArgoCD Connector controller  watches any newly created connection secr
 
 Automated process:
 
-Build and push docker image to docker registry
-Deploy the app to dedicated namespace on Kubernetes Cluster
-Create Load Balancer listener rules
-Run automated tests
-Delete namespace and all services
-Delete docker image
-Delete Load Balancer rules
+* Build and push docker image to docker registry
+* Deploy the app to dedicated namespace on Kubernetes Cluster
+* Create Load Balancer listener rules
+* Run automated tests
+* Delete namespace and all services
+* Delete docker image
+* Delete Load Balancer rules
 
 [![Gitflow](./images/gitflow_ephemeral_environments.png)]()
 
