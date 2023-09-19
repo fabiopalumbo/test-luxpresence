@@ -47,22 +47,65 @@ Ad hoc environments are short-lived environments that are designed to be used fo
 
 # Explanation
 
+Terraform code is used to create
 
-Read values from our Environment custom resource to provision a Kubernetes cluster using Crossplane’s custom resources (this implies we need Crossplane installed in our cluster). This will be taken care of by our Environment Controller.
+* Controller EKS --> where ArgoCd and Crossplane will live
+* {name}_EKS Cluster --> example dev cluester
 
-Add the provisioned cluster to ArgoCD. This is done by taking the cluster connection secret that Crossplane creates for talking to the provisioned cluster and using the information in the secret to add the cluster to ArgoCD. Adding a cluster to ArgoCD is just creating a secret in ArgoCD’s namespace with specific annotations so that ArgoCD can recognize it as an added cluster (This is the TargetCluster in our image). This will be taken care of by our ArgoCD Connector controller which watches any newly created connection secrets in Crossplane’s namespace and uses it to create cluster connection in ArgoCD’s namespace for adding a cluster.
+We will use Argo CD and / Crossplane’s custom resources  to create any supporting infrastrcture
 
-Read values from our Environment custom resource and install the applications in our provisioned cluster. This will be taken care of by our Environment Controller.
+We will use ArgoCD and the cluster connection secret that Crossplane creates for talking to the provisioned cluster and using the information in the secret to add the cluster to ArgoCD. 
+Adding a cluster to ArgoCD is just creating a secret in ArgoCD’s namespace with specific annotations so that ArgoCD can recognize it as an added cluster (This is the TargetCluster in our image). 
 
-(optional, not shown in the image) If any TTL aka time to live is specified in the Environment custom resource, honor it and delete the cluster after the specified time. E.g., if TTL is specified as say 2h, delete the cluster after two hours. This will be taken care of by our Environment Controller
+Usually a ArgoCD Connector controller  watches any newly created connection secrets in Crossplane’s namespace and uses it to create cluster connection in ArgoCD’s namespace for adding a cluster/namespace.
 
-# Gitflow
+(optional) If any TTL aka time to live is specified in the Environment custom resource, honor it and delete the cluster after the specified time. E.g., if TTL is specified as say 2h, delete the cluster after two hours. This will be taken care of by our Environment Controller
+
+# CICD / Gitflow
+
+Automated process:
+
+Build and push docker image to docker registry
+Deploy the app to dedicated namespace on Kubernetes Cluster
+Create Load Balancer listener rules
+Run automated tests
+Delete namespace and all services
+Delete docker image
+Delete Load Balancer rules
 
 [![Gitflow](./images/gitflow_ephemeral_environments.png)]()
 
-* When PR gets created, ephemeral environment is started with a ArgoCD Webhook
+[![Gitflow](./images/CICD_ephemeral.png)]()
+
+[![Gitflow](./images/CICD02.webp)]()
+
+
+* When feat branch gets created it will push images to ECR + CICD with Snyk scans, Sonarqube, etc
+```
+jobs:
+  docker:
+    name: Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Registry Login
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ENDPOINT }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+      - name: Build & Push
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          no-cache: true
+          tags: ${{ secrets.ENDPOINT }}/${{ env.IMAGE_NAME }}:${{ env.PR_NUMBER }}
+```
+* When PR gets created, ephemeral environment is started with a ArgoCD Workflows / Triggers
 name: Deploy PR Environment
-```on:
+```
+on:
   pull_request:
     types: [opened, reopened, synchronize]
 ```
@@ -72,4 +115,11 @@ name: Deploy PR Environment
 ```
       if: github.event.pull_request.merged == 'true'
 ```
-    
+
+or
+```
+name: Destroy PR Environment
+on:
+  pull_request:
+    types: [closed]
+```
