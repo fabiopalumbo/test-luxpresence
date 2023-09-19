@@ -61,6 +61,8 @@ Usually a ArgoCD Connector controller  watches any newly created connection secr
 
 (optional) If any TTL aka time to live is specified in the Environment custom resource, honor it and delete the cluster after the specified time. E.g., if TTL is specified as say 2h, delete the cluster after two hours. This will be taken care of by our Environment Controller
 
+
+
 # CICD / Gitflow
 
 Automated process:
@@ -77,6 +79,60 @@ Delete Load Balancer rules
 
 [![Gitflow](./images/CICD_ephemeral.png)]()
 
+## ArgoCD Details
+
+1. We will create the ArgoCD ApplicationSet with the Pull Request Generator. We are monitoring the app source code repository (1). 
+2. We need Secret containing access token (2).
+3. While the ApplicationSet targets the source code repository, the generated ArgoCD Application refers to the config repository (3).
+4. It also sets several Helm parameters. The name of the preview namespace is the same as the name of the branch with the preview prefix (4). 
+5. The app image is tagged with the commit hash and PR (5). We are also setting the name of the app image (6). All the configuration settings are applied automatically by ArgoCD (7).
+
+```
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: sample
+spec:
+  generators:
+    - pullRequest:
+        github:
+          owner: xxx
+          repo: sample # (1)
+          tokenRef:
+            key: token
+            secretName: github-token # (2)
+        requeueAfterSeconds: 60
+  template:
+    metadata:
+      name: 'sample-spring-{{branch}}-{{number}}'
+    spec:
+      destination:
+        namespace: 'preview-{{branch}}'
+        server: 'https://kubernetes.default.svc'
+      project: default
+      source:
+        # (3)
+        path: preview/
+        repoURL: 'xxxx'
+        targetRevision: HEAD
+        helm:
+          parameters:
+            # (4)
+            - name: namespace
+              value: 'preview-{{branch}}'
+            # (5)
+            - name: version
+              value: '{{head_sha}}' + {{PR}}
+            # (6)
+            - name: image
+              value: xxx
+            - name: name
+              value: xxx
+      # (7)
+      syncPolicy:
+        automated:
+          selfHeal: true
+```
 [![Gitflow](./images/CICD02.webp)]()
 
 
