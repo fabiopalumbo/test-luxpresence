@@ -24,6 +24,12 @@ Please let me know if you have any questions!
 
 </details>
 
+# Core concepts
+GitOps uses Git as a single source of truth for declarative infrastructure and application code. It evolves DevOps best practices (such as version control, collaboration, compliance, and CI/CD) and Infrastructure as Code (IaC) to perform operations on infrastructures and modern cloud-native applications. It does this by putting the descriptive code for cloud infrastructures and applications into Git repositories for processing and version control. You then use automation to apply any changes to the infrastructure.
+
+Argo CD is a Kubernetes-native declarative continuous delivery (CD) tool that follows the GitOps methodology.
+
+Crossplane is an open source Kubernetes add-on that transforms your cluster into a universal control plane. With Crossplane, platform teams can assemble infrastructures from multiple vendors, and application teams can consume higher-level, self-service APIs without having to write any code.
 
 # What are ad hoc environments?
 Ad hoc environments are short-lived environments that are designed to be used for testing a specific set of features or for demoing a specific application configuration in an isolated environment. It is intended to be a functional duplicate of the main production environment. An ad hoc environment is the first cloud environment that the application code will be deployed to after a developer has been working on it in a local development environment.
